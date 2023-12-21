@@ -75,7 +75,7 @@ func (p *BrutePool) doCallBack(ctx context.Context, v interface{}) {
 	case <-ctx.Done(): //如果context取消，就结束该线程
 		return
 	default:
-		p.SuccessCallBack(v)
+		go p.SuccessCallBack(v)
 	}
 }
 
