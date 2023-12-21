@@ -1,4 +1,4 @@
-package brutepool
+package oldpool
 
 import (
 	"fmt"
@@ -24,7 +24,7 @@ func defaultCallBack(v interface{}) {
 func New(list []interface{}, function func(interface{}) bool) *BrutePool {
 	return &BrutePool{
 		BruteList:       list,
-		Concurrency:     4, //建议线程数为3
+		Concurrency:     3, //建议线程数为3
 		BruteFunc:       function,
 		SuccessCallBack: defaultCallBack,
 		success:         0,

@@ -15,7 +15,7 @@ var pass string
 func TrySSHLogin(passwd interface{}) bool {
 	user := "root"
 	addr := "127.0.0.1:22"
-	fmt.Println(">" + passwd.(string))
+	fmt.Printf("> %s/%s\n", user, passwd.(string))
 	sshConfig := &ssh.ClientConfig{
 		User:            user,
 		Auth:            []ssh.AuthMethod{ssh.Password(passwd.(string))},
