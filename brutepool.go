@@ -3,6 +3,7 @@ package brutepool
 import (
 	"fmt"
 	"sync"
+	"sync/atomic"
 )
 
 type BrutePool struct {
@@ -11,7 +12,7 @@ type BrutePool struct {
 	BruteFunc       func(interface{}) bool //爆破函数
 	SuccessCallBack func(interface{})      //爆破成功的回调函数
 
-	success bool //爆破是否成功
+	success int32 //爆破是否成功
 	//success  atomic.Value             //爆破是否成功
 	queues chan interface{} //数据通道
 }
@@ -27,7 +28,7 @@ func New(list []interface{}, function func(interface{}) bool) *BrutePool {
 		Concurrency:     3, //建议线程数为3
 		BruteFunc:       function,
 		SuccessCallBack: defaultCallBack,
-		success:         false,
+		success:         0,
 		queues:          make(chan interface{}),
 	}
 }
@@ -37,7 +38,7 @@ func (b *BrutePool) Run() {
 	go func() {
 		for _, i := range b.BruteList {
 			//爆破未成功时，才往通道存数据。如果成功，就不继续存数据了。
-			if b.success {
+			if atomic.LoadInt32(&b.success) == 1 {
 				break
 			}
 			b.queues <- i
@@ -53,11 +54,12 @@ func (b *BrutePool) Run() {
 			//从通道取数据
 			for v := range b.queues {
 				if b.BruteFunc(v) {
-					b.success = true
+					//b.success = true
+					atomic.StoreInt32(&b.success, 1)
 					b.SuccessCallBack(v)
 					break
 				}
-				if b.success {
+				if atomic.LoadInt32(&b.success) == 1 {
 					break
 				}
 			}
