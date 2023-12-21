@@ -12,9 +12,8 @@ type BrutePool struct {
 	BruteFunc       func(interface{}) bool //爆破函数
 	SuccessCallBack func(interface{})      //爆破成功的回调函数
 
-	success int32 //爆破是否成功
-	//success  atomic.Value             //爆破是否成功
-	queues chan interface{} //数据通道
+	success int32            //爆破是否成功
+	queues  chan interface{} //数据通道
 }
 
 // 默认回调为打印结果
@@ -25,7 +24,7 @@ func defaultCallBack(v interface{}) {
 func New(list []interface{}, function func(interface{}) bool) *BrutePool {
 	return &BrutePool{
 		BruteList:       list,
-		Concurrency:     3, //建议线程数为3
+		Concurrency:     4, //建议线程数为3
 		BruteFunc:       function,
 		SuccessCallBack: defaultCallBack,
 		success:         0,
@@ -54,7 +53,6 @@ func (b *BrutePool) Run() {
 			//从通道取数据
 			for v := range b.queues {
 				if b.BruteFunc(v) {
-					//b.success = true
 					atomic.StoreInt32(&b.success, 1)
 					b.SuccessCallBack(v)
 					break
