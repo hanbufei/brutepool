@@ -1,18 +1,52 @@
-### 不优雅的协程池BrutePool
+##  brutepool：一旦某个子goroutine成功，就停止全部goroutine。
 
-#### 为什么不优雅？
-因为是魔改了北半球最优雅的协程池HackPool。经历了多次变更，已经面目全非，离优雅十万八千里了：
-> bool类型全局变量 -> 原子变量 -> context.WithCancel
+### 简介
+* 目前我看到的goroutine池都没有提前终止功能，就意味着字典有多大就要跑多久。
+* 于是参考HackPool，有了brutepool。
+* 一旦字典里的某个字符串成功爆破了，就取消所有的goroutine，结束字典内后面数据的爆破。然后运行回调函数。
 
-#### 为什么魔改？
-因为HackPool没有提前终止功能，就意味着字典有多大就要跑多久。
-我加了终止功能，一旦字典里的某个字符串成功爆破了，就取消所有的goroutine，结束字典内后面数据的爆破。然后运行回调函数。
+### 使用说明
+1. 先定义一个类型为[]interface{}的字典(BruteList)。
+   
+`       
+    passList := ['123456','admin','111111','root']
+    bruteList := make([]interface{}, len(passList), len(passList))
+    for i := range passList {
+        bruteList[i] = passList[i]
+    }
+`
+   
+2. 再定义一个返回bool的爆破函数(BruteFunc)。
 
-#### 使用的时候，可以参考cmd/main.go。简单来说就是：
-1. 先定义一个字典BruteList。
-2. 再定义一个爆破函数BruteFunc。
-3. 最后调用BrutePool的New和Run即可。
+    `   
+    func bruteFunc(passwd interface{}) bool {
+        if passwd成功{
+            return true
+            }
+        return false
+   }
+   `
+3. 导入github.com/hanbufei/brutepool包。
+`    import github.com/hanbufei/brutepool`
 
-#### 小瑕疵（多跑）
-假如线程数为8，其中1个线程爆破成功了，其它正在跑的7个线程还会继续跑，但是后续不会新建线程了。
-也就是说，永远会多跑“线程数-1”，虽然对字典里成千上万的数量级来说不算什么。
+4.　调用brutepool的New和Run即可（默认线程数4，回调函数是打印成功的值）。如果不想使用默认配置，则使用第5步代替。
+
+`
+    p := brutepool.New(bruteList, bruteFunc)
+    p.Run()
+`
+5. 直接定义brutepool并Run。
+
+`
+    p := &brutepool.BrutePool{
+        BruteList:       bruteList,
+        Concurrency:     你定义的线程数,
+        BruteFunc:       bruteFunc,
+        SuccessCallBack: 你定义的回调函数,
+        queues:          make(chan interface{}),
+    }
+    p.Run()
+`
+
+### 示例
+    参考 cmd/main.go

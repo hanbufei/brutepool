@@ -23,7 +23,7 @@ func defaultCallBack(v interface{}) {
 func New(list []interface{}, function func(interface{}) bool) *BrutePool {
 	return &BrutePool{
 		BruteList:       list,
-		Concurrency:     4, //建议线程数为3
+		Concurrency:     4, //建议线程数为4
 		BruteFunc:       function,
 		SuccessCallBack: defaultCallBack,
 		queues:          make(chan interface{}),
