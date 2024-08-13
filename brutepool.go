@@ -23,7 +23,7 @@ func defaultCallBack(v interface{}) {
 func New(list []interface{}, function func(interface{}) bool) *BrutePool {
 	return &BrutePool{
 		BruteList:       list,
-		Concurrency:     4, //建议线程数为4
+		Concurrency:     8, //默认线程数为8，经对比测试，在双核电脑上该数量性价比最高，之后继续增加线程的收益大幅度降低
 		BruteFunc:       function,
 		SuccessCallBack: defaultCallBack,
 		queues:          make(chan interface{}),
